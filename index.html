@@ -164,6 +164,7 @@
             }
         }
     </style>
+    <script src="https://cdn.amplitude.com/libs/analytics-browser-2.11.1-min.js.gz"></script><script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.8.0-min.js.gz"></script><script>window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('d2c1343a592213a92dd8571b24445607', {"autocapture":{"elementInteractions":true}});</script>
 </head>
 <body>
     <div class="container">
@@ -192,10 +193,34 @@
     </div>
 
     <script>
+        // localStorage functions
+        function saveSelectedLanguages() {
+            const selectedLanguages = Array.from(document.querySelectorAll('.language-badge.active'))
+                .map(badge => badge.dataset.lang);
+            localStorage.setItem('selectedLanguages', JSON.stringify(selectedLanguages));
+        }
+
+        function loadSelectedLanguages() {
+            const saved = localStorage.getItem('selectedLanguages');
+            if (saved) {
+                const selectedLanguages = JSON.parse(saved);
+                document.querySelectorAll('.language-badge').forEach(badge => {
+                    if (selectedLanguages.includes(badge.dataset.lang)) {
+                        badge.classList.add('active');
+                    } else {
+                        badge.classList.remove('active');
+                    }
+                });
+            }
+        }
+
         // Set default timestamp to current time
         document.getElementById('timestamp').value = Math.floor(Date.now() / 1000);
         
-        // Language badge selection with automatic conversion
+        // Load saved language preferences
+        loadSelectedLanguages();
+        
+        // Language badge selection with automatic conversion and localStorage saving
         document.querySelectorAll('.language-badge').forEach(badge => {
             badge.addEventListener('click', function(e) {
                 if (e.ctrlKey || e.metaKey) {
@@ -204,6 +229,7 @@
                     document.querySelectorAll('.language-badge').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                 }
+                saveSelectedLanguages();
                 convertTimestamp();
             });
         });
