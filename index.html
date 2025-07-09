@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Convert timestamps to various programming language formats. Simple, fast, and free timestamp converter tool.">
+    <meta name="keywords" content="timestamp converter, programming languages, date time conversion, unix timestamp">
+    <meta name="author" content="Timestamp to Code Converter">
+    <title>Timestamp to Code Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .timestamp-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .languages {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .language-badge {
+            padding: 10px 16px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .language-badge:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .language-badge.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .result-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .languages {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Timestamp to Code</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="timestamp">Enter Unix Timestamp:</label>
+                <input type="number" id="timestamp" placeholder="e.g., 1752076380" required>
+                <div class="timestamp-info">Enter the Unix timestamp (seconds since epoch)</div>
+            </div>
+            
+            <div class="languages">
+                <div class="language-badge active" data-lang="javascript">JavaScript</div>
+                <div class="language-badge" data-lang="python">Python</div>
+                <div class="language-badge" data-lang="java">Java</div>
+                <div class="language-badge" data-lang="csharp">C#</div>
+                <div class="language-badge" data-lang="php">PHP</div>
+                <div class="language-badge" data-lang="go">Go</div>
+                <div class="language-badge" data-lang="rust">Rust</div>
+                <div class="language-badge" data-lang="sql">SQL</div>
+            </div>
+        </div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        // Set default timestamp to current time
+        document.getElementById('timestamp').value = Math.floor(Date.now() / 1000);
+        
+        // Language badge selection with automatic conversion
+        document.querySelectorAll('.language-badge').forEach(badge => {
+            badge.addEventListener('click', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    this.classList.toggle('active');
+                } else {
+                    document.querySelectorAll('.language-badge').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                }
+                convertTimestamp();
+            });
+        });
+
+        // Also trigger conversion when timestamp input changes
+        document.getElementById('timestamp').addEventListener('input', convertTimestamp);
+
+        function convertTimestamp() {
+            const timestampInput = document.getElementById('timestamp').value;
+            if (!timestampInput) {
+                document.getElementById('results').innerHTML = '';
+                return;
+            }
+
+            const unixTimestamp = parseInt(timestampInput);
+            if (isNaN(unixTimestamp)) {
+                document.getElementById('results').innerHTML = '';
+                return;
+            }
+
+            const date = new Date(unixTimestamp * 1000);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const isoString = date.toISOString();
+
+            const selectedLanguages = Array.from(document.querySelectorAll('.language-badge.active'))
+                .map(badge => badge.dataset.lang);
+
+            const conversions = {
+                javascript: `new Date(${unixTimestamp * 1000})`,
+                
+                python: `datetime(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds})`,
+                
+                java: `new Date(${unixTimestamp * 1000}L)`,
+                
+                csharp: `DateTimeOffset.FromUnixTimeSeconds(${unixTimestamp}).DateTime`,
+                
+                php: `new DateTime("@${unixTimestamp}")`,
+                
+                go: `time.Unix(${unixTimestamp}, 0)`,
+                
+                rust: `DateTime::from_timestamp(${unixTimestamp}, 0).unwrap()`,
+                
+                sql: `FROM_UNIXTIME(${unixTimestamp})`
+            };
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            selectedLanguages.forEach(lang => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                const label = document.createElement('div');
+                label.className = 'result-label';
+                label.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+                
+                const code = document.createElement('div');
+                code.className = 'result-code';
+                code.textContent = conversions[lang];
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.textContent = 'Copy Code';
+                copyBtn.onclick = () => copyToClipboard(conversions[lang]);
+                
+                resultItem.appendChild(label);
+                resultItem.appendChild(code);
+                resultItem.appendChild(copyBtn);
+                resultsDiv.appendChild(resultItem);
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#48bb78';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Initial conversion on page load
+        convertTimestamp();
+    </script>
+</body>
+</html>
