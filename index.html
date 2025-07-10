@@ -338,6 +338,7 @@
         <div class="footer-links">
             <a href="privacy.html">Privacy Policy</a>
             <a href="terms.html">Terms of Use</a>
+            <a href="https://timestamptocode.featurebase.app/" target="_blank">Feedback</a>
         </div>
     </div>
 
@@ -424,33 +425,33 @@
             }
 
             const date = new Date(unixTimestamp * 1000);
+            const isoString = date.toISOString();
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const seconds = String(date.getSeconds()).padStart(2, '0');
-            const isoString = date.toISOString();
 
             const selectedLanguages = Array.from(document.querySelectorAll('.language-badge.active'))
                 .map(badge => badge.dataset.lang);
 
             const conversions = {
-                javascript: `new Date(${unixTimestamp * 1000})`,
+                javascript: `new Date(${year}, ${parseInt(month) - 1}, ${day}, ${hours}, ${minutes}, ${seconds})`,
                 
-                python: `datetime(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds})`,
+                python: `datetime(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds}, tzinfo=timezone.utc)`,
                 
-                java: `new Date(${unixTimestamp * 1000}L)`,
+                java: `ZonedDateTime.of(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds}, 0, ZoneOffset.UTC)`,
                 
-                csharp: `DateTimeOffset.FromUnixTimeSeconds(${unixTimestamp}).DateTime`,
+                csharp: `new DateTime(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds}, DateTimeKind.Utc)`,
                 
-                php: `new DateTime("@${unixTimestamp}")`,
+                php: `new DateTime("${year}-${month}-${day} ${hours}:${minutes}:${seconds}", new DateTimeZone("UTC"))`,
                 
-                go: `time.Unix(${unixTimestamp}, 0)`,
+                go: `time.Date(${year}, ${month}, ${day}, ${hours}, ${minutes}, ${seconds}, 0, time.UTC)`,
                 
-                rust: `DateTime::from_timestamp(${unixTimestamp}, 0).unwrap()`,
+                rust: `DateTime::<Utc>::from_utc(NaiveDateTime::new(NaiveDate::from_ymd(${year}, ${month}, ${day}), NaiveTime::from_hms(${hours}, ${minutes}, ${seconds})), Utc)`,
                 
-                sql: `FROM_UNIXTIME(${unixTimestamp})`
+                sql: `'${year}-${month}-${day} ${hours}:${minutes}:${seconds}+00:00'`
             };
 
             const resultsDiv = document.getElementById('results');
