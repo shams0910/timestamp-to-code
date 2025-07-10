@@ -186,18 +186,22 @@
             text-decoration: underline;
         }
 
-        /* Simple Cookie Banner */
+        /* Non-blocking Cookie Banner */
         .cookie-banner {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            border-top: 1px solid #e1e5e9;
+            border: 1px solid #e1e5e9;
+            border-radius: 15px;
             padding: 15px 20px;
             z-index: 2000;
             display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         .cookie-banner.show {
@@ -205,18 +209,15 @@
         }
 
         .cookie-content {
-            max-width: 1200px;
-            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         .cookie-text {
             flex: 1;
-            min-width: 300px;
             font-size: 14px;
             color: #555;
             line-height: 1.5;
@@ -236,13 +237,14 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .cookie-btn:hover {
@@ -257,12 +259,10 @@
                 gap: 15px;
             }
 
-            .cookie-text {
-                min-width: auto;
-            }
-
             .cookie-banner {
-                padding: 15px;
+                left: 10px;
+                right: 10px;
+                bottom: 70px;
             }
         }
 
@@ -297,7 +297,7 @@
     <script src="https://cdn.amplitude.com/libs/analytics-browser-2.11.1-min.js.gz"></script><script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.8.0-min.js.gz"></script><script>window.amplitude.add(window.sessionReplay.plugin({sampleRate: 1}));window.amplitude.init('d2c1343a592213a92dd8571b24445607', {"autocapture":{"elementInteractions":true}});</script>
 </head>
 <body>
-    <!-- Simple Cookie Banner -->
+    <!-- Non-blocking Cookie Banner -->
     <div id="cookieBanner" class="cookie-banner">
         <div class="cookie-content">
             <div class="cookie-text">
@@ -347,17 +347,15 @@
         function acceptCookies() {
             localStorage.setItem('cookieConsent', 'accepted');
             document.getElementById('cookieBanner').classList.remove('show');
-            initializeApp();
         }
 
         function checkCookieConsent() {
             const consent = localStorage.getItem('cookieConsent');
             if (!consent) {
-                // Show banner if no consent has been given
-                document.getElementById('cookieBanner').classList.add('show');
-            } else {
-                // Initialize app if consent has been given
-                initializeApp();
+                // Show banner if no consent has been given (non-blocking)
+                setTimeout(() => {
+                    document.getElementById('cookieBanner').classList.add('show');
+                }, 1000); // Show after 1 second
             }
         }
 
@@ -497,7 +495,8 @@
             });
         }
 
-        // Check cookie consent on page load
+        // Initialize app immediately and check cookie consent
+        initializeApp();
         checkCookieConsent();
     </script>
 </body>
